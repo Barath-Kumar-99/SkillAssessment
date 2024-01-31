@@ -7,10 +7,11 @@ import (
 	"sync"
 )
 
+//initialization of interface for service layer
 type ConversionService interface {
 	Worker(ch chan dto.ConversionRequestDto, ch2 chan dto.ConversionResponseDto, wg *sync.WaitGroup) *dto.ConversionResponseDto
 }
-
+//worker function to convert the request to ConversionRequestDto type
 func (r DefaultConversionService) Worker(ch chan dto.ConversionRequestDto, ch2 chan dto.ConversionResponseDto, wg *sync.WaitGroup) *dto.ConversionResponseDto {
 	defer wg.Done()
 
@@ -23,10 +24,11 @@ func (r DefaultConversionService) Worker(ch chan dto.ConversionRequestDto, ch2 c
 		}
 		// Convert the request to the new format
 		converted := convertToNewFormat(requestBody)
+		// Send response back to channel
 		ch2 <- converted
 	}
 }
-
+//convertToNewFormat to convert the request to dto.ConversionResponseDto  format
 func convertToNewFormat(req dto.ConversionRequestDto) dto.ConversionResponseDto {
 
 	// Attribute represents an attribute in the converted format
@@ -41,6 +43,7 @@ func convertToNewFormat(req dto.ConversionRequestDto) dto.ConversionResponseDto 
 		Type  string `json:"type"`
 	}
 
+	//converting the request to dto.ConversionResponseDto format
 	converted := dto.ConversionResponseDto{
 		Event:           req["ev"].(string),
 		EventType:       req["et"].(string),
@@ -54,6 +57,7 @@ func convertToNewFormat(req dto.ConversionRequestDto) dto.ConversionResponseDto 
 		Attributes:      make(map[string]dto.Attribute),
 		Traits:          make(map[string]dto.Trait),
 	}
+	//added the for loop to iterate the req and assign the values of attributes and traits
 	for key, value := range req {
 		if len(key) >= 4 && key[:4] == "atrk" {
 			attrNum := key[4:]
@@ -75,12 +79,15 @@ func convertToNewFormat(req dto.ConversionRequestDto) dto.ConversionResponseDto 
 			}
 		}
 	}
+
 	return converted
 }
 
+//establishing the connection between service and repository incase of db connection
 type DefaultConversionService struct {
 	repo domain.ConversionRepository
 }
+
 
 func NewConversionService(repository domain.ConversionRepository) DefaultConversionService {
 	return DefaultConversionService{repository}
