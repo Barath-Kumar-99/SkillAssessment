@@ -8,16 +8,20 @@ import (
 	"fmt"
 	"net/http"
 )
-
+//struct to connect with service
 type CHandlers struct {
 	CService Service.ConversionService
 }
 
+// this function used to validate the request body and return the response from channel
 func (h *CHandlers) ConversionHandler(ch chan dto.ConversionRequestDto, ch2 chan dto.ConversionResponseDto, w http.ResponseWriter, r *http.Request) {
+
 	var requestBody dto.ConversionRequestDto
 
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&requestBody)
+
+	//Added error handling to send the error response from json decoder
 	if err != nil {
 		errormessage := errs.ErrorResponse{
 			Errors: struct {
@@ -44,6 +48,8 @@ func (h *CHandlers) ConversionHandler(ch chan dto.ConversionRequestDto, ch2 chan
 	}
 
 }
+
+// Added a seperate writeResponse function for write the response
 func writeResponse(w http.ResponseWriter, code int, data interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
